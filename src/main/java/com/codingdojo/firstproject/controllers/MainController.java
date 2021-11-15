@@ -181,7 +181,9 @@ public class MainController {
 		          countMap.put(item, countMap.get(item) + 1);
 		      else
 		          countMap.put(item, 1);
-		  }
+		  	}
+//		List<Item> filterItem = 
+//		viewModel.addAttribute("findByCat", filterItem);
 		viewModel.addAttribute("countMap", countMap);
 		viewModel.addAttribute("total", total);
 		viewModel.addAttribute("order",currentOrder);
@@ -240,7 +242,9 @@ public class MainController {
 		viewModel.addAttribute("allComments", commentService.allComments());
 		Long userId = (Long)session.getAttribute("user_Id");
 		User loginUser = userService.getOneUser(userId);
+		List<Comment> userComment = loginUser.getComments();
 		viewModel.addAttribute("user", loginUser);
+		viewModel.addAttribute("userComment", userComment);
 		return "comment.jsp";
 	}
 	

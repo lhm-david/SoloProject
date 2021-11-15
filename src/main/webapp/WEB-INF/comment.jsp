@@ -51,6 +51,11 @@
 				</div>
 			</c:forEach>
 		</div>
+		<div>
+			<c:forEach items="${userComment}" var="comment">
+				<p>${comment.content}</p>
+			</c:forEach>
+		</div>
 		<h3>Post your comment:</h3>
 		<div class="form-floating">
 			<form:form method="POST" action="/EasyOrder.com/commentWall" modelAttribute="newComment">

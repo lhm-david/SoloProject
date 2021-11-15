@@ -25,9 +25,10 @@
 		</div>
 		<div class="row">	
 			<h2>Your Order has been placed!</h2>
+			<h2>Your Order Status:</h2>
 		</div>
 		<div class="row">
-			<h3>Order Number: #<a href="/EasyOrder.com/order/${order.id}"><c:out value="${orderNumber}"/></a> </h3>
+			<h3>Order Number #<a href="/EasyOrder.com/order/${order.id}"><c:out value="${orderNumber}"/></a> </h3>
 		</div>
 		<div class="col">
 			<h4> Please <a href="/EasyOrder.com/commentWall">give us a feedback!</a> </h4>

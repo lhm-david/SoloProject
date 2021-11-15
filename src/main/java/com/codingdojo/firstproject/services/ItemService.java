@@ -23,6 +23,10 @@ public class ItemService {
 		return this.itemRepo.findById(id).orElse(null);
 	}
 	
+	public List<Item> findCat(String cat){
+		return this.itemRepo.findByCatergoryContaining(cat);
+	}
+	
 	public void defaultingItemQ(Item item) {
 		item.setQuantities(0);
 		this.itemRepo.save(item);

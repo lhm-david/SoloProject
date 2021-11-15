@@ -21,18 +21,30 @@
 			<div class="col-md-auto"><a href="/logout">Logout</a></div>
 		</div>
 		<hr>
-		<div class="row detail">
-			<c:choose>
-				<c:when test="${!empty order.orderItems}">
-					<h2>Order Number #<c:out value="${orderNumber}"/></h2>
-						<ul class="list-group">
-							<c:forEach items = "${countMap.keySet()}" var ="item">
-								<li class="list-group-item"><img src= "${item.url}" class="img-thumbnail img"/></li>
-								<li class="list-group-item">(${countMap.get(item)}) x ${item.name} ------- $${item.price * countMap.get(item)}</li>
+		<div class="row">
+			<div class="col-4 detail">
+				<c:choose>
+					<c:when test="${!empty order.orderItems}">
+						<h2>Order Number #<c:out value="${orderNumber}"/></h2>
+							<ul class="list-group">
+								<c:forEach items = "${countMap.keySet()}" var ="item">
+									<li class="list-group-item"><img src= "${item.url}" class="img-thumbnail img"/></li>
+									<li class="list-group-item">(${countMap.get(item)}) x ${item.name} ------- $${item.price * countMap.get(item)}</li>
+								</c:forEach>
+							</ul>
+					</c:when>
+				</c:choose>
+			</div>
+			<div class="col">
+				<c:choose>
+					<c:when test="${!empty order.orderItems}">
+						<h2>People who order this also order:</h2>
+							<c:forEach items="${order.orderItems }" var="item">
+						
 							</c:forEach>
-						</ul>
-				</c:when>
-			</c:choose>
+					</c:when>
+				</c:choose>
+			</div>
 		</div>
 		<br>
 		<div class="row">

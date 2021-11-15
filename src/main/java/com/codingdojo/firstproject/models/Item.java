@@ -25,6 +25,7 @@ public class Item {
     private Double price;
     private Integer quantities = 0;
     private String url;
+    private String catergory;
     @Column(updatable=false)
     private Date createdAt;
     private Date updatedAt;
@@ -102,5 +103,13 @@ public class Item {
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	public String getCatergories() {
+		return catergory;
+	}
+
+	public void setCatergories(String catergory) {
+		this.catergory = catergory;
 	}
 }
