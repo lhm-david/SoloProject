@@ -24,8 +24,53 @@
 			<div class="col-md-auto"><a href="/EasyOrder.com/${order.id}/CheckOut">View Your Cart (<c:out value="${order.orderItems.size()}"/>)</a></div>
 		</div>
 		<hr>
+		
+		<div>
+		
+<%-- 		<!-- Added code by Anna -->
+		<h3>Weekday Specials</h3><br>
+		<div style="display:flex; justify-content: space-evenly;">
+			<c:forEach items="${weekdaySpecials}" begin = "0" var="special" varStatus="theCount">
+				<c:choose>
+					<c:when test="${weekday[theCount.index] == currentDay}">
+						<div style="flex-direct:row; border-style:dashed; border-width:5px; border-color:blue;">												
+							<div id="divIDNo${theCount.index}"> 
+							 	<span style="font-weight:bold; margin-left:50px;">
+							 		  ${weekday[theCount.index]}
+							    </span>
+							</div>							
+						  	<img src= "${special.url}" style="width:170px; height:170px;"/><br>												
+							<span style="font-weight:bold;"> ${special.name} - $${special.price}</span>						
+					   </div>	
+					</c:when>
+			        <c:otherwise>
+						 <div style="flex-direct:row; border-color:transparent;">												
+							<div id="divIDNo${theCount.index}"> 
+							 	<span style="font-weight:bold; margin-left:50px; ">
+							 		  ${weekday[theCount.index]}
+							    </span>
+							</div>							
+						  	<img src= "${special.url}" style="width:170px; height:170px;"/><br>												
+							<span style="font-weight:bold;"> ${special.name} - $${special.price}</span>						
+						</div>	
+					</c:otherwise>
+				</c:choose>
+			</c:forEach>	
+	   </div>
+
+		
+		<br><br> --%>
 		<div class="row">
 			<h3>Menu</h3>
+
+            <!-- Added code by Anna -->
+		    <div style="display:flex; justify-content: flex-end; margin-left: -160px;">	
+			    <div style="flex-direct:row; margin-right: 40px;"><a href="/EasyOrder.com/newOrder/${order.id}/priceDesc">Price (H to L)</a></div>
+				<div style="flex-direct:row; margin-right: 40px;"><a href="/EasyOrder.com/newOrder/${order.id}/priceAsc">Price (L to H)</a></div>
+				<%-- <div style="flex-direct:row; margin-right: 40px;"><a href="/EasyOrder.com/newOrder/${order.id}/category">View By Category</a></div> --%>
+				<div style="flex-direct:row;"><a href="/EasyOrder.com/newOrder/${order.id}">Reset View</a></div>
+		    </div>			
+			
 			<table class="table table-hover align-middle">
 				<thead class="table-dark">
 					<tr>

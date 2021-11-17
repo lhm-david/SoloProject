@@ -1,5 +1,8 @@
 package com.codingdojo.firstproject.controllers;
 
+import java.time.DayOfWeek;
+import java.time.*;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +43,8 @@ public class MainController {
 	private final CommentService commentService;
 	@Autowired
 	private final ItemService itemService;
+
+    Boolean flag = true;
 	
 	public MainController (UserService userService, UserValidator userValidator, OrderService orderService, CommentService commentService, ItemService itemService) {
 		this.userService=userService;
@@ -134,10 +139,48 @@ public class MainController {
 		Long userId = (Long)session.getAttribute("user_Id");
 		User loginUser = userService.getOneUser(userId);
 		viewModel.addAttribute("user", loginUser);
-		viewModel.addAttribute("order", this.orderService.getOne(orderId));
-		viewModel.addAttribute("allItems", this.itemService.allItems());
+		viewModel.addAttribute("order", this.orderService.getOne(orderId));		
+		
+		//Added code by Anna for daily special
+		String[] weekdays = {"Monday","Tuesday", "Wednesday","Thursday","Friday"};
+		String currentDay = this.itemService.currDay();		
+		viewModel.addAttribute("allItems", this.itemService.byCategory());
+		viewModel.addAttribute("weekdaySpecials", this.itemService.weekdaySpecials());
+		viewModel.addAttribute("weekday",weekdays );
+		viewModel.addAttribute("currentDay",currentDay );
 		return "newOrder.jsp";
 	}
+
+	//Added code by Anna
+	@GetMapping("/EasyOrder.com/newOrder/{id}/priceAsc")
+	public String startOrderPriceAsc(HttpSession session, Model viewModel, @ModelAttribute("item")Item item, @PathVariable("id")Long orderId) {
+		Long userId = (Long)session.getAttribute("user_Id");
+		User loginUser = userService.getOneUser(userId);
+		viewModel.addAttribute("user", loginUser);
+		viewModel.addAttribute("order", this.orderService.getOne(orderId));
+		viewModel.addAttribute("allItems", this.itemService.byPriceAscended());
+		return "newOrder.jsp";
+	}
+	//Added code by Anna
+	@GetMapping("/EasyOrder.com/newOrder/{id}/priceDesc")
+	public String startOrderPriceDes(HttpSession session, Model viewModel, @ModelAttribute("item")Item item, @PathVariable("id")Long orderId) {
+		Long userId = (Long)session.getAttribute("user_Id");
+		User loginUser = userService.getOneUser(userId);
+		viewModel.addAttribute("user", loginUser);
+		viewModel.addAttribute("order", this.orderService.getOne(orderId));
+		viewModel.addAttribute("allItems", this.itemService.byPriceDescended());
+		return "newOrder.jsp";
+	}
+	//Added code by Anna
+	@GetMapping("/EasyOrder.com/newOrder/{id}/category")
+	public String startOrderByCategory(HttpSession session, Model viewModel, @ModelAttribute("item")Item item, @PathVariable("id")Long orderId) {
+		Long userId = (Long)session.getAttribute("user_Id");
+		User loginUser = userService.getOneUser(userId);
+		viewModel.addAttribute("user", loginUser);
+		viewModel.addAttribute("order", this.orderService.getOne(orderId));
+		viewModel.addAttribute("allItems", this.itemService.byCategory());
+		return "newOrder.jsp";
+	}	
 
 	@GetMapping("/EasyOrder.com/newOrder/{orderId}/{id}")
 	public String addToCart(HttpSession session, @PathVariable("orderId")Long orderId, @PathVariable("id")Long itemId, Model viewModel, @ModelAttribute("item")Item item) {
@@ -235,14 +278,46 @@ public class MainController {
 		return "success.jsp";
 	}
 	
+	//@GetMapping("/EasyOrder.com/commentWall")
+	//public String showComment(HttpSession session, Model viewModel, @ModelAttribute("newComment")Comment newComment) {
+	//	viewModel.addAttribute("allComments", commentService.allComments());
+	//	Long userId = (Long)session.getAttribute("user_Id");
+	//	User loginUser = userService.getOneUser(userId);
+	//	viewModel.addAttribute("user", loginUser);
+	//	return "comment.jsp";
+	//}
+
+
+	//Updated code by Anna
 	@GetMapping("/EasyOrder.com/commentWall")
 	public String showComment(HttpSession session, Model viewModel, @ModelAttribute("newComment")Comment newComment) {
-		viewModel.addAttribute("allComments", commentService.allComments());
 		Long userId = (Long)session.getAttribute("user_Id");
 		User loginUser = userService.getOneUser(userId);
+		List<Comment> userComment = loginUser.getComments();
 		viewModel.addAttribute("user", loginUser);
+		
+		if (flag == true) {
+			viewModel.addAttribute("allComments", commentService.allComments());
+		}
+		if (flag == false) {
+			viewModel.addAttribute("allComments", userComment);
+		}
 		return "comment.jsp";
 	}
+	//Added code by Anna
+	@PostMapping("/EasyOrder.com/commentWall/user")
+	public String postUserComment(@Valid @ModelAttribute("newComment")Comment newComment, BindingResult result, HttpSession session, Model viewModel) {
+		flag = false;
+		return "redirect:/EasyOrder.com/commentWall";
+	}
+	//Added code by Anna
+	@PostMapping("/EasyOrder.com/commentWall/reset")
+	public String postResetComment(@Valid @ModelAttribute("newComment")Comment newComment, BindingResult result, HttpSession session, Model viewModel) {
+		flag = true;
+		return "redirect:/EasyOrder.com/commentWall";
+	}
+
+
 	
 	@PostMapping("/EasyOrder.com/commentWall")
 	public String postComment(@Valid @ModelAttribute("comment")Comment newComment, BindingResult result, HttpSession session, Model viewModel) {
