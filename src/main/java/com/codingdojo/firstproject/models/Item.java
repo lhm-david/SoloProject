@@ -105,11 +105,11 @@ public class Item {
 		this.url = url;
 	}
 
-	public String getCatergories() {
+	public String getCatergory() {
 		return catergory;
 	}
 
-	public void setCatergories(String catergory) {
+	public void setCatergory(String catergory) {
 		this.catergory = catergory;
 	}
 }

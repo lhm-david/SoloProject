@@ -30,15 +30,30 @@
 			</div>
 		</div>
 		<hr>
-		<div class="middle">
-			<div class="col-3">
+		<div class="middle row">
+			<div class="col-6">
 				<c:choose>
 					<c:when test="${empty order.id}">
 						<form:form method="POST" action="/EasyOrder.com/newOrder" modelAttribute="newOrder" >
-						<button class="btn btn-primary" type="submit">Start a New Order</button>
-						<form:hidden path="orderByUser" value="${user.id}"/>
-						<form:hidden path="paid" value="false"/>
+						<div class="row">
+							<div class="col-3">
+								<button class="btn btn-primary" type="submit">Start a New Order</button>
+							</div>
+							<div class="col-4">
+								<form:label path="scheduleDate" class="form-label">Order for : </form:label>
+								<form:input type="date" path="scheduleDate" min="2021-11-17" max="2021-11-30"/>
+							</div>
+							<div class="col-2">
+								<form:radiobutton path="deliveryOption" value="delivery"/>
+								<form:label path="deliveryOption" class="form-label">Delivery </form:label>
+								<form:radiobutton path="deliveryOption" value="pickUp"/>
+								<form:label path="deliveryOption" class="form-label">Pick Up </form:label>
+							</div>
+							<form:hidden path="orderByUser" value="${user.id}"/>
+							<form:hidden path="paid" value="false"/>
+						</div>
 						</form:form>
+						
 					</c:when>
 					<c:otherwise>
 						<a class="btn btn-primary" role="button" href="/EasyOrder.com/newOrder/${order.id}">Resume Your Order</a>

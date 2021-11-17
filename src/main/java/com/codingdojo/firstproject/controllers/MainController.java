@@ -119,13 +119,15 @@ public class MainController {
 	}
 	
 	@PostMapping("/EasyOrder.com/newOrder")
-	public String createOrder(HttpSession session, Model viewModel, @ModelAttribute("newOrder")Order order) {
+	public String createOrder(@Valid @ModelAttribute("newOrder")Order order,BindingResult result, Model viewModel) {
+		if (result.hasErrors()) {
+			return "redirect:/EasyOrder.com";
+		}
 		Random orderNumber = new Random();
 		Number newRandomNumber = Math.abs(orderNumber.nextInt());
 		order.setOrderNumber(newRandomNumber);
 		this.orderService.createOrder(order);
 		Long orderId = order.getId();
-		session.setAttribute("order_Id", orderId);
 		return "redirect:/EasyOrder.com/newOrder/"+orderId;
 	}
 	
@@ -176,14 +178,14 @@ public class MainController {
 		Number orderNumber = currentOrder.getOrderNumber();
 		Double total = currentOrder.getTotal();
 		Map<Item, Integer>countMap = new HashMap<>();
+		List<Item> allItems = this.itemService.allItems();
 		for (Item item: currentOrder.getOrderItems()) {
 		      if (countMap.containsKey(item))
 		          countMap.put(item, countMap.get(item) + 1);
 		      else
 		          countMap.put(item, 1);
 		  	}
-//		List<Item> filterItem = 
-//		viewModel.addAttribute("findByCat", filterItem);
+		viewModel.addAttribute("allItems", allItems);
 		viewModel.addAttribute("countMap", countMap);
 		viewModel.addAttribute("total", total);
 		viewModel.addAttribute("order",currentOrder);
@@ -192,7 +194,7 @@ public class MainController {
 	}
 	
 	@PostMapping("/EasyOrder.com/{id}/CheckOut")
-	public String postOrder(HttpSession session, Model viewModel, @PathVariable("id")Long orderId) {
+	public String postOrder(Model viewModel, @PathVariable("id")Long orderId) {
 		Order order = orderService.getOne(orderId);
 		this.orderService.updateOrder(order);
 		for(Item item : order.getOrderItems()) {
@@ -231,6 +233,14 @@ public class MainController {
 		Order newOrder = orderService.getOne(orderId);
 		Number orderNumber = newOrder.getOrderNumber();
 		User loginUser = userService.getOneUser(userId);
+		Map<Item, Integer>countMap = new HashMap<>();
+		for (Item item: newOrder.getOrderItems()) {
+		      if (countMap.containsKey(item))
+		          countMap.put(item, countMap.get(item) + 1);
+		      else
+		          countMap.put(item, 1);
+		  }
+		viewModel.addAttribute("countMap", countMap);
 		viewModel.addAttribute("order", newOrder);
 		viewModel.addAttribute("orderNumber", orderNumber);
 		viewModel.addAttribute("user", loginUser);
