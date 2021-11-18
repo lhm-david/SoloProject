@@ -1,8 +1,5 @@
 package com.codingdojo.firstproject.controllers;
 
-import java.time.DayOfWeek;
-import java.time.*;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,10 +22,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.codingdojo.firstproject.models.Comment;
 import com.codingdojo.firstproject.models.Item;
 import com.codingdojo.firstproject.models.Order;
+import com.codingdojo.firstproject.models.Payment;
 import com.codingdojo.firstproject.models.User;
 import com.codingdojo.firstproject.services.CommentService;
 import com.codingdojo.firstproject.services.ItemService;
 import com.codingdojo.firstproject.services.OrderService;
+import com.codingdojo.firstproject.services.PaymentService;
 import com.codingdojo.firstproject.services.UserService;
 import com.codingdojo.firstproject.validation.UserValidator;
 
@@ -43,15 +42,19 @@ public class MainController {
 	private final CommentService commentService;
 	@Autowired
 	private final ItemService itemService;
+	
+	@Autowired
+	private final PaymentService payService;
 
     Boolean flag = true;
 	
-	public MainController (UserService userService, UserValidator userValidator, OrderService orderService, CommentService commentService, ItemService itemService) {
+	public MainController (UserService userService, UserValidator userValidator, OrderService orderService, CommentService commentService, ItemService itemService,PaymentService payService) {
 		this.userService=userService;
 		this.userValidator=userValidator;
 		this.commentService=commentService;
 		this.itemService=itemService;
 		this.orderService=orderService;
+		this.payService=payService;
 	}
 	
 	@GetMapping("/")
@@ -143,11 +146,11 @@ public class MainController {
 		
 		//Added code by Anna for daily special
 		String[] weekdays = {"Monday","Tuesday", "Wednesday","Thursday","Friday"};
-		String currentDay = this.itemService.currDay();		
-		viewModel.addAttribute("allItems", this.itemService.byCategory());
-		viewModel.addAttribute("weekdaySpecials", this.itemService.weekdaySpecials());
+		//String currentDay = this.itemService.currDay();		
+		viewModel.addAttribute("allItems", this.itemService.allItems());
+		//viewModel.addAttribute("weekdaySpecials", this.itemService.weekdaySpecials());
 		viewModel.addAttribute("weekday",weekdays );
-		viewModel.addAttribute("currentDay",currentDay );
+		//viewModel.addAttribute("currentDay",currentDay );
 		return "newOrder.jsp";
 	}
 
@@ -158,7 +161,7 @@ public class MainController {
 		User loginUser = userService.getOneUser(userId);
 		viewModel.addAttribute("user", loginUser);
 		viewModel.addAttribute("order", this.orderService.getOne(orderId));
-		viewModel.addAttribute("allItems", this.itemService.byPriceAscended());
+		//viewModel.addAttribute("allItems", this.itemService.byPriceAscended());
 		return "newOrder.jsp";
 	}
 	//Added code by Anna
@@ -168,7 +171,7 @@ public class MainController {
 		User loginUser = userService.getOneUser(userId);
 		viewModel.addAttribute("user", loginUser);
 		viewModel.addAttribute("order", this.orderService.getOne(orderId));
-		viewModel.addAttribute("allItems", this.itemService.byPriceDescended());
+		//viewModel.addAttribute("allItems", this.itemService.byPriceDescended());
 		return "newOrder.jsp";
 	}
 	//Added code by Anna
@@ -178,7 +181,7 @@ public class MainController {
 		User loginUser = userService.getOneUser(userId);
 		viewModel.addAttribute("user", loginUser);
 		viewModel.addAttribute("order", this.orderService.getOne(orderId));
-		viewModel.addAttribute("allItems", this.itemService.byCategory());
+		//viewModel.addAttribute("allItems", this.itemService.byCategory());
 		return "newOrder.jsp";
 	}	
 
@@ -239,7 +242,9 @@ public class MainController {
 		for(Item item : order.getOrderItems()) {
 			itemService.defaultingItemQ(item);
 		}
-		return "redirect:/EasyOrder.com/"+orderId+"/success";
+		//return "redirect:/EasyOrder.com/"+orderId+"/success";
+		
+		return "redirect:/EasyOrder.com/{id}/checkout/payment";
 	}
 	
 	@GetMapping("/EasyOrder.com/order/{id}")
@@ -259,6 +264,52 @@ public class MainController {
 		viewModel.addAttribute("user", loginUser);
 		return "orderDetail.jsp";
 	}
+	
+	// Added the payment get
+	//"/EasyOrder.com/{id}/CheckOut"
+	 
+	@GetMapping("/EasyOrder.com/{id}/checkout/payment")
+	public String paymentOrder(@ModelAttribute("payment") Payment payment,@PathVariable("id") Long orderId,BindingResult result,Model model,HttpSession session) {
+		User user= this.userService.getOneUser((Long)session.getAttribute("user_Id"));
+		model.addAttribute("user", user);
+		List<Payment> userPayments=user.getPaymentByUser();
+		
+		//model.addAttribute("pizza", this.pService.getOnePizza(id));
+		model.addAttribute("order", this.orderService.getOne(orderId));
+		model.addAttribute("payments",userPayments);
+		return "payment.jsp";
+	}
+	
+	@PostMapping("/EasyOrder.com/{id}/checkout/payment")
+	public String paymentOrderPost(@Valid@ModelAttribute("payment") Payment payment,@PathVariable("id") Long orderId,BindingResult result,Model model,HttpSession session){
+		
+		if(result.hasErrors()) {
+		User user= this.userService.getOneUser((Long)session.getAttribute("user_Id"));
+		//model.addAttribute("pizza", this.pService.getOnePizza(id));
+		model.addAttribute("order", this.orderService.getOne(orderId));
+
+		return "payment.jsp";
+		}
+		
+		// user who makePayment
+		User user= this.userService.getOneUser((Long)session.getAttribute("user_Id"));
+		// create a payment
+		
+		this.payService.createPayment(payment);
+		//return "redirect:/orders/continue";
+		return "redirect:/EasyOrder.com/"+orderId+"/success";
+
+	
+	}
+
+
+	@GetMapping("/continue")
+	public String countinueFoody() {
+		return "continue.jsp";
+	}
+
+	
+	
 	
 	@GetMapping("/EasyOrder.com/delete/{id}")
 	public String deleteOrder(@PathVariable("id")Long id) {
@@ -316,7 +367,6 @@ public class MainController {
 		flag = true;
 		return "redirect:/EasyOrder.com/commentWall";
 	}
-
 
 	
 	@PostMapping("/EasyOrder.com/commentWall")
