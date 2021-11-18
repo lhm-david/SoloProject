@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.codingdojo.firstproject.models.Item;
 import com.codingdojo.firstproject.models.Order;
+import com.codingdojo.firstproject.models.Payment;
 import com.codingdojo.firstproject.repositories.OrderRepo;
 
 @Service
@@ -51,6 +52,40 @@ public class OrderService {
 		item.setQuantities(Q);
 		Double total = Math.round((order.getTotal()-item.getPrice())*100.0)/100.0;
 		order.setTotal(total);
+		this.orderRepo.save(order);
+	}
+	
+	public void addSpecialInOrder(Order order, Item item) {
+		List<Item> itemOrder = order.getOrderItems();
+		itemOrder.add(item);
+		Integer Q = item.getQuantities();
+		Q++;
+		item.setQuantities(Q);
+		Double total = Math.round((order.getTotal()+item.getPrice())*100.0)/100.0;
+		order.setTotal(total);
+		order.setHasSpecial(true);
+		this.orderRepo.save(order);
+	}
+	
+	public void removeSpecialInOrder(Order order, Item item) {
+		List<Item> itemOrder = order.getOrderItems();
+		itemOrder.remove(item);
+		Integer Q = item.getQuantities();
+		Q--;
+		item.setQuantities(Q);
+		Double total = Math.round((order.getTotal()-item.getPrice())*100.0)/100.0;
+		order.setTotal(total);
+		order.setHasSpecial(false);
+		this.orderRepo.save(order);
+	}
+	
+	public void disCountApply(Order order, Double total) {
+		order.setTotal(total);
+		this.orderRepo.save(order);
+	}
+	
+	public void setPayment(Order order, Payment payment) {
+		order.setOrderPayment(payment);
 		this.orderRepo.save(order);
 	}
 	

@@ -55,8 +55,9 @@ public class User {
     @OneToMany(mappedBy="commentByUser", fetch = FetchType.LAZY)
     private List<Comment> comments;
     
-    @OneToMany(mappedBy="makePayment",cascade=CascadeType.ALL,fetch=FetchType.LAZY)
-    private List<Payment> paymentByUser;
+
+    @OneToMany(mappedBy="paymentForUser", fetch = FetchType.LAZY)
+    private List<Payment> userPayments;
     
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -136,11 +137,11 @@ public class User {
 	public void setComments(List<Comment> comments) {
 		this.comments = comments;
 	}
-	public List<Payment> getPaymentByUser() {
-		return paymentByUser;
+	public List<Payment> getUserPayments() {
+		return userPayments;
 	}
-	public void setPaymentByUser(List<Payment> paymentByUser) {
-		this.paymentByUser = paymentByUser;
+	public void setUserPayments(List<Payment> userPayments) {
+		this.userPayments = userPayments;
 	}
 	public List<Comment> getUserLikes() {
 		return userLikes;

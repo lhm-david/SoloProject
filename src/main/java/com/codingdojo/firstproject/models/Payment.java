@@ -2,6 +2,9 @@ package com.codingdojo.firstproject.models;
 
 import java.util.Date;
 
+import java.util.List;
+
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -10,11 +13,14 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+
+import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -22,47 +28,51 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Table(name="payments")
 
 public class Payment {
-	
 		@Id
 		@GeneratedValue(strategy=GenerationType.IDENTITY)
-		
 		private Long id;
-		
-		@NotEmpty 
+
+		@Size(min=3, message="Card Holder Name must be at least 3 characters")
 		private String cardHolderName;
-		@NotNull
 		
-		
+		@Size(min=16, max=16, message="Please enter the correct 16 degits Card Number")
 		private String cardNumber;
-		@NotNull
-		private Integer cnv;
-		private String  expirationMonth;
 		
-		private String  expirationYear;
+		@Size(min=3, max=3, message="Card Security Code must be enter and should be 3 characters")
+		private String cnv;
+		@NotBlank(message="Expiration Month must be select")
+		private String expMonth;
+		
+		@NotBlank(message="Expiration Year must be select")
+		private String expYear;
+		
+		@NotBlank(message="Card Type is not supported")
 		private String cardType;
-		
+
+
 		@Column(updatable=false)
 		@DateTimeFormat(pattern="YYYY-MM-dd  hh:mm:ss")
 		private Date createdAt;
 		@DateTimeFormat(pattern="YYYY-MM-dd  hh:mm:ss")
 		private Date updatedAt;
-		
 		@PrePersist
 		protected void onCreate() {
 			this.createdAt=new Date();
 		}
-		
 		@PreUpdate
 		protected void onUpdate() {
 			this.updatedAt=new Date();
 		}
+		@OneToMany(mappedBy="orderPayment", fetch=FetchType.LAZY)
+		private List<Order> paymentForOrder;
 		
 		@ManyToOne(fetch=FetchType.LAZY)
 		@JoinColumn(name="user_id")
-		private User makePayment;
-		
+		private User paymentForUser;
+
 		public Payment() {
-			
+
+
 		}
 
 		public Long getId() {
@@ -89,28 +99,29 @@ public class Payment {
 			this.cardNumber = cardNumber;
 		}
 
-		public Integer getCnv() {
+
+		public String getCnv() {
 			return cnv;
 		}
 
-		public void setCnv(Integer cnv) {
+		public void setCnv(String cnv) {
 			this.cnv = cnv;
 		}
 
-		public String getExpirationMonth() {
-			return expirationMonth;
+		public String getExpMonth() {
+			return expMonth;
 		}
 
-		public void setExpirationMonth(String expirationMonth) {
-			this.expirationMonth = expirationMonth;
+		public void setExpMonth(String expMonth) {
+			this.expMonth = expMonth;
 		}
 
-		public String getExpirationYear() {
-			return expirationYear;
+		public String getExpYear() {
+			return expYear;
 		}
 
-		public void setExpirationYear(String expirationYear) {
-			this.expirationYear = expirationYear;
+		public void setExpYear(String expYear) {
+			this.expYear = expYear;
 		}
 
 		public String getCardType() {
@@ -136,13 +147,21 @@ public class Payment {
 		public void setUpdatedAt(Date updatedAt) {
 			this.updatedAt = updatedAt;
 		}
-
-		public User getMakePayment() {
-			return makePayment;
+  
+		public User getPaymentForUser() {
+			return paymentForUser;
 		}
 
-		public void setMakePayment(User makePayment) {
-			this.makePayment = makePayment;
+		public void setPaymentForUser(User paymentForUser) {
+			this.paymentForUser = paymentForUser;
 		}
+
+		public List<Order> getPaymentForOrder() {
+			return paymentForOrder;
+		}
+
+		public void setPaymentForOrder(List<Order> paymentForOrder) {
+			this.paymentForOrder = paymentForOrder;
+		}		
 
 }

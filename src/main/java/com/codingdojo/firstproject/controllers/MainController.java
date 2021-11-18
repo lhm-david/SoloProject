@@ -42,19 +42,18 @@ public class MainController {
 	private final CommentService commentService;
 	@Autowired
 	private final ItemService itemService;
-	
 	@Autowired
-	private final PaymentService payService;
-
-    Boolean flag = true;
+	private final PaymentService paymentService;
 	
-	public MainController (UserService userService, UserValidator userValidator, OrderService orderService, CommentService commentService, ItemService itemService,PaymentService payService) {
+	Boolean flag = true;
+
+	public MainController (UserService userService, UserValidator userValidator, OrderService orderService, CommentService commentService, ItemService itemService, PaymentService paymentService) {
 		this.userService=userService;
 		this.userValidator=userValidator;
 		this.commentService=commentService;
 		this.itemService=itemService;
 		this.orderService=orderService;
-		this.payService=payService;
+		this.paymentService=paymentService;
 	}
 	
 	@GetMapping("/")
@@ -127,13 +126,15 @@ public class MainController {
 	}
 	
 	@PostMapping("/EasyOrder.com/newOrder")
-	public String createOrder(HttpSession session, Model viewModel, @ModelAttribute("newOrder")Order order) {
+	public String createOrder(@Valid @ModelAttribute("newOrder")Order order,BindingResult result, Model viewModel) {
+		if (result.hasErrors()) {
+			return "redirect:/EasyOrder.com";
+		}
 		Random orderNumber = new Random();
 		Number newRandomNumber = Math.abs(orderNumber.nextInt());
 		order.setOrderNumber(newRandomNumber);
 		this.orderService.createOrder(order);
 		Long orderId = order.getId();
-		session.setAttribute("order_Id", orderId);
 		return "redirect:/EasyOrder.com/newOrder/"+orderId;
 	}
 	
@@ -141,49 +142,69 @@ public class MainController {
 	public String startOrder(HttpSession session, Model viewModel, @ModelAttribute("item")Item item, @PathVariable("id")Long orderId) {
 		Long userId = (Long)session.getAttribute("user_Id");
 		User loginUser = userService.getOneUser(userId);
-		viewModel.addAttribute("user", loginUser);
-		viewModel.addAttribute("order", this.orderService.getOne(orderId));		
-		
-		//Added code by Anna for daily special
+		//Anna(Daily Special):
 		String[] weekdays = {"Monday","Tuesday", "Wednesday","Thursday","Friday"};
-		//String currentDay = this.itemService.currDay();		
-		viewModel.addAttribute("allItems", this.itemService.allItems());
-		//viewModel.addAttribute("weekdaySpecials", this.itemService.weekdaySpecials());
-		viewModel.addAttribute("weekday",weekdays );
-		//viewModel.addAttribute("currentDay",currentDay );
+		String currentDay = this.itemService.currDay();	
+		viewModel.addAttribute("user", loginUser);
+		viewModel.addAttribute("order", this.orderService.getOne(orderId));
+		viewModel.addAttribute("allItems", this.itemService.byCategory());
+		viewModel.addAttribute("weekdaySpecials", this.itemService.weekdaySpecials());
+		viewModel.addAttribute("weekday",weekdays);
+		viewModel.addAttribute("currentDay",currentDay);
 		return "newOrder.jsp";
 	}
-
+	
+	
 	//Added code by Anna
 	@GetMapping("/EasyOrder.com/newOrder/{id}/priceAsc")
 	public String startOrderPriceAsc(HttpSession session, Model viewModel, @ModelAttribute("item")Item item, @PathVariable("id")Long orderId) {
 		Long userId = (Long)session.getAttribute("user_Id");
 		User loginUser = userService.getOneUser(userId);
+		String[] weekdays = {"Monday","Tuesday", "Wednesday","Thursday","Friday"};
+		String currentDay = this.itemService.currDay();	
 		viewModel.addAttribute("user", loginUser);
 		viewModel.addAttribute("order", this.orderService.getOne(orderId));
-		//viewModel.addAttribute("allItems", this.itemService.byPriceAscended());
+		viewModel.addAttribute("weekdaySpecials", this.itemService.weekdaySpecials());
+		viewModel.addAttribute("weekday",weekdays);
+		viewModel.addAttribute("currentDay",currentDay);
+		viewModel.addAttribute("allItems", this.itemService.byPriceAscended());
 		return "newOrder.jsp";
 	}
+		
 	//Added code by Anna
 	@GetMapping("/EasyOrder.com/newOrder/{id}/priceDesc")
 	public String startOrderPriceDes(HttpSession session, Model viewModel, @ModelAttribute("item")Item item, @PathVariable("id")Long orderId) {
 		Long userId = (Long)session.getAttribute("user_Id");
 		User loginUser = userService.getOneUser(userId);
+		String[] weekdays = {"Monday","Tuesday", "Wednesday","Thursday","Friday"};
+		String currentDay = this.itemService.currDay();	
 		viewModel.addAttribute("user", loginUser);
 		viewModel.addAttribute("order", this.orderService.getOne(orderId));
-		//viewModel.addAttribute("allItems", this.itemService.byPriceDescended());
+		viewModel.addAttribute("weekdaySpecials", this.itemService.weekdaySpecials());
+		viewModel.addAttribute("weekday",weekdays);
+		viewModel.addAttribute("currentDay",currentDay);
+		viewModel.addAttribute("allItems", this.itemService.byPriceDescended());
 		return "newOrder.jsp";
 	}
-	//Added code by Anna
-	@GetMapping("/EasyOrder.com/newOrder/{id}/category")
-	public String startOrderByCategory(HttpSession session, Model viewModel, @ModelAttribute("item")Item item, @PathVariable("id")Long orderId) {
-		Long userId = (Long)session.getAttribute("user_Id");
-		User loginUser = userService.getOneUser(userId);
-		viewModel.addAttribute("user", loginUser);
-		viewModel.addAttribute("order", this.orderService.getOne(orderId));
-		//viewModel.addAttribute("allItems", this.itemService.byCategory());
-		return "newOrder.jsp";
-	}	
+	
+	@GetMapping("/EasyOrder.com/newOrder/{orderId}/special/{id}")
+	public String addSpecial(@PathVariable("orderId")Long orderId, @PathVariable("id")Long itemId, Model viewModel, @ModelAttribute("item")Item item) {
+		Item special = this.itemService.getOne(itemId);
+		Order currentOrder = this.orderService.getOne(orderId);
+		viewModel.addAttribute("order", currentOrder);
+		this.orderService.addSpecialInOrder(currentOrder, special);
+		return "redirect:/EasyOrder.com/newOrder/"+orderId;
+	}
+	
+	@GetMapping("/EasyOrder.com/newOrder/{orderId}/removeSpecial/{id}")
+	public String removeSpecial(@PathVariable("orderId")Long orderId, @PathVariable("id")Long itemId, Model viewModel) {
+		Item special = this.itemService.getOne(itemId);
+		Order currentOrder = this.orderService.getOne(orderId);
+		viewModel.addAttribute("order", currentOrder);
+		this.orderService.removeSpecialInOrder(currentOrder, special);
+		currentOrder.setHasSpecial(false);
+		return "redirect:/EasyOrder.com/newOrder/"+orderId;
+	}
 
 	@GetMapping("/EasyOrder.com/newOrder/{orderId}/{id}")
 	public String addToCart(HttpSession session, @PathVariable("orderId")Long orderId, @PathVariable("id")Long itemId, Model viewModel, @ModelAttribute("item")Item item) {
@@ -220,31 +241,42 @@ public class MainController {
 		viewModel.addAttribute("user", loginUser);
 		Order currentOrder = orderService.getOne(orderId);
 		Number orderNumber = currentOrder.getOrderNumber();
-		Double total = currentOrder.getTotal();
+		if (currentOrder.getHasSpecial() == true) {
+			Double discountToApply = currentOrder.getTotal();
+			Double discount = Math.round((discountToApply*0.1)*100.0)/100.00;
+			Double total = Math.round((discountToApply*0.9)*100.0)/100.00;
+			viewModel.addAttribute("discount",discount);
+			viewModel.addAttribute("total", total);
+		}else {
+			Double total = currentOrder.getTotal();
+			viewModel.addAttribute("total", total);
+		}
 		Map<Item, Integer>countMap = new HashMap<>();
+		List<Item> allItems = this.itemService.allItems();
 		for (Item item: currentOrder.getOrderItems()) {
 		      if (countMap.containsKey(item))
 		          countMap.put(item, countMap.get(item) + 1);
 		      else
 		          countMap.put(item, 1);
-		  }
+		  	}
+		viewModel.addAttribute("allItems", allItems);
 		viewModel.addAttribute("countMap", countMap);
-		viewModel.addAttribute("total", total);
 		viewModel.addAttribute("order",currentOrder);
 		viewModel.addAttribute("orderNumber", orderNumber);
 		return "checkOut.jsp";
 	}
 	
 	@PostMapping("/EasyOrder.com/{id}/CheckOut")
-	public String postOrder(HttpSession session, Model viewModel, @PathVariable("id")Long orderId) {
+	public String postOrder(Model viewModel, @PathVariable("id")Long orderId) {
 		Order order = orderService.getOne(orderId);
-		this.orderService.updateOrder(order);
-		for(Item item : order.getOrderItems()) {
-			itemService.defaultingItemQ(item);
+		if (order.getHasSpecial() == true) {
+			Double discountToApply = order.getTotal();
+			Double total = Math.round((discountToApply*0.9)*100.0)/100.00;
+			orderService.disCountApply(order, total);
 		}
-		//return "redirect:/EasyOrder.com/"+orderId+"/success";
-		
-		return "redirect:/EasyOrder.com/{id}/checkout/payment";
+    
+		//Updated code by Archana
+		return "redirect:/EasyOrder.com/"+orderId+"/checkout/payment";
 	}
 	
 	@GetMapping("/EasyOrder.com/order/{id}")
@@ -259,6 +291,7 @@ public class MainController {
 		      else
 		          countMap.put(item, 1);
 		  }
+		viewModel.addAttribute("total", selectedOrder.getTotal());
 		viewModel.addAttribute("countMap", countMap);
 		viewModel.addAttribute("order", selectedOrder);
 		viewModel.addAttribute("user", loginUser);
@@ -313,31 +346,82 @@ public class MainController {
 	
 	@GetMapping("/EasyOrder.com/delete/{id}")
 	public String deleteOrder(@PathVariable("id")Long id) {
+		Order orderToDelete = this.orderService.getOne(id);
+		for(Item item : orderToDelete.getOrderItems()) {
+			itemService.defaultingItemQ(item);
+		}
 		this.orderService.deleteOrder(id);
 		return "redirect:/EasyOrder.com";
 	}
 	
+	//Added code by Archana
+	@GetMapping("/EasyOrder.com/{id}/checkout/payment")
+	public String paymentOrder(@ModelAttribute("payment")Payment payment,@PathVariable("id") Long orderId,BindingResult result,Model model,HttpSession session) {
+		User user= this.userService.getOneUser((Long)session.getAttribute("user_Id"));
+		model.addAttribute("user", user);
+		List<Payment> userPayments = user.getUserPayments();
+		model.addAttribute("order", this.orderService.getOne(orderId));
+		model.addAttribute("payments", userPayments);
+		return "payment.jsp";
+	}
+	
+	//Added code by Archana
+	@PostMapping("/EasyOrder.com/{id}/checkout/payment")
+	public String paymentOrderPost(@Valid @ModelAttribute("payment")Payment payment,BindingResult result, @PathVariable("id") Long orderId, Model model, HttpSession session){
+		if(result.hasErrors()) {
+			User user= this.userService.getOneUser((Long)session.getAttribute("user_Id"));
+			model.addAttribute("user", user);
+			List<Payment> userPayments = user.getUserPayments();
+			model.addAttribute("order", this.orderService.getOne(orderId));
+			model.addAttribute("payments", userPayments);
+			return "payment.jsp";
+		}
+		// create a payment
+		this.paymentService.createPayment(payment);
+		return "redirect:/EasyOrder.com/"+orderId+"/checkout/payment";
+	}
+	
+	//Added code by Archana
+	@GetMapping("/EasyOrder.com/{id}/checkout/savedCard/{paymentId}")
+	public String checkOutWithSavedCard(@PathVariable("id")Long id, @PathVariable("paymentId")Long paymentId) {
+		Order orderPaid = this.orderService.getOne(id);
+		Payment saveCard = this.paymentService.getOne(paymentId);
+		orderPaid.setOrderPayment(saveCard);
+		this.orderService.updateOrder(orderPaid);
+		for(Item item : orderPaid.getOrderItems()) {
+			itemService.defaultingItemQ(item);
+		}
+		return "redirect:/EasyOrder.com/"+id+"/success";
+	}
+	//Added code by Archana
+//	@GetMapping("/EasyOrder.com/{orderId}/deletePayment/{id}")
+//	public String deletePayment(@PathVariable("id")Long id, @PathVariable("orderId")Long orderId) {
+//		paymentService.deletePayment(id);
+//		return "redirect:/EasyOrder.com/"+orderId+"/checkout/payment";
+//		
+//	}
+	
+	//Updated code by Archana
 	@GetMapping("/EasyOrder.com/{id}/success")
 	public String placeOrder(HttpSession session, Model viewModel, @PathVariable("id")Long orderId) {
 		Long userId = (Long)session.getAttribute("user_Id");
 		Order newOrder = orderService.getOne(orderId);
 		Number orderNumber = newOrder.getOrderNumber();
 		User loginUser = userService.getOneUser(userId);
+		Map<Item, Integer>countMap = new HashMap<>();
+		for (Item item: newOrder.getOrderItems()) {
+		      if (countMap.containsKey(item))
+		          countMap.put(item, countMap.get(item) + 1);
+		      else
+		          countMap.put(item, 1);
+		  }
+		viewModel.addAttribute("countMap", countMap);
 		viewModel.addAttribute("order", newOrder);
 		viewModel.addAttribute("orderNumber", orderNumber);
 		viewModel.addAttribute("user", loginUser);
 		return "success.jsp";
 	}
 	
-	//@GetMapping("/EasyOrder.com/commentWall")
-	//public String showComment(HttpSession session, Model viewModel, @ModelAttribute("newComment")Comment newComment) {
-	//	viewModel.addAttribute("allComments", commentService.allComments());
-	//	Long userId = (Long)session.getAttribute("user_Id");
-	//	User loginUser = userService.getOneUser(userId);
-	//	viewModel.addAttribute("user", loginUser);
-	//	return "comment.jsp";
-	//}
-
 
 	//Updated code by Anna
 	@GetMapping("/EasyOrder.com/commentWall")
@@ -346,7 +430,6 @@ public class MainController {
 		User loginUser = userService.getOneUser(userId);
 		List<Comment> userComment = loginUser.getComments();
 		viewModel.addAttribute("user", loginUser);
-		
 		if (flag == true) {
 			viewModel.addAttribute("allComments", commentService.allComments());
 		}
@@ -368,6 +451,20 @@ public class MainController {
 		return "redirect:/EasyOrder.com/commentWall";
 	}
 
+	
+	//Added code by Anna
+	@PostMapping("/EasyOrder.com/commentWall/user")
+	public String postUserComment(@Valid @ModelAttribute("newComment")Comment newComment, BindingResult result, HttpSession session, Model viewModel) {
+		flag = false;
+		return "redirect:/EasyOrder.com/commentWall";
+	}
+	
+	//Added code by Anna
+	@PostMapping("/EasyOrder.com/commentWall/reset")
+	public String postResetComment(@Valid @ModelAttribute("newComment")Comment newComment, BindingResult result, HttpSession session, Model viewModel) {
+		flag = true;
+		return "redirect:/EasyOrder.com/commentWall";
+	}
 	
 	@PostMapping("/EasyOrder.com/commentWall")
 	public String postComment(@Valid @ModelAttribute("comment")Comment newComment, BindingResult result, HttpSession session, Model viewModel) {

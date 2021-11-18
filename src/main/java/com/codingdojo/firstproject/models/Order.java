@@ -16,6 +16,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Table(name="orders")
@@ -25,8 +28,18 @@ public class Order {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	private Number orderNumber;
+	@NotBlank
+	private String deliveryOption;
+	@DateTimeFormat(pattern="yyyy-MM-dd")
+	private Date scheduleDate;
 	private Boolean paid = false;
+	private Boolean hasSpecial = false;
 	private Double total = 0.00;
+	
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="payment_id")
+	private Payment orderPayment;
+	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="user_id")
 	private User orderByUser;
@@ -101,6 +114,30 @@ public class Order {
 	}
 	public void setTotal(Double total) {
 		this.total = total;
+	}
+	public Date getScheduleDate() {
+		return scheduleDate;
+	}
+	public void setScheduleDate(Date scheduleDate) {
+		this.scheduleDate = scheduleDate;
+	}
+	public void setDeliveryOption(String deliveryOption) {
+		this.deliveryOption = deliveryOption;
+	}
+	public String getDeliveryOption() {
+		return deliveryOption;
+	}
+	public Boolean getHasSpecial() {
+		return hasSpecial;
+	}
+	public void setHasSpecial(Boolean hasSpecial) {
+		this.hasSpecial = hasSpecial;
+	}
+	public Payment getOrderPayment() {
+		return orderPayment;
+	}
+	public void setOrderPayment(Payment orderPayment) {
+		this.orderPayment = orderPayment;
 	}
 	
 }
