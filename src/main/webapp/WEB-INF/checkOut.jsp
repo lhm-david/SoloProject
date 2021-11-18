@@ -44,7 +44,15 @@
 									</c:forEach>
 								</ul>
 							<div class="row">
-								<h3>Total: $${total}</h3>
+								<c:choose>
+									<c:when test="${order.hasSpecial.equals(true)}">
+										<h3>You have saved $${discount}</h3>
+										<h3>Total: $${total}</h3>
+									</c:when>
+									<c:otherwise>
+										<h3>Total: $${total}</h3>
+									</c:otherwise>
+								</c:choose>
 							</div>
 							<div class="row">
 								<div class="col-6">
@@ -57,24 +65,22 @@
 								</div>
 							</div>
 						</div>
-						<div class="col-5">
-							<h3>People who order this also order:</h3>
+						<div class="col-4">
 							<c:set var="i" value="${0}"/>
 								<c:forEach items="${countMap.keySet()}" var="item">
 									<c:choose>
 										<c:when test="${countMap.get(item) > i}">
 											<c:set var="i" value="${countMap.get(item)}"/>
-											<c:set var ="cat" value="${item.catergory}"/>
+											<c:set var ="cat" value="${item.category}"/>
 										</c:when>
 									</c:choose>
 								</c:forEach>
 								<table class="table table-hover align-middle">
 									<thead class="table-dark">
 										<tr>
+											<th>You may also like these:</th>
 											<th></th>
-											<th>Name</th>
-											<th>Price</th>
-											<th>Action</th>
+											<th></th>
 										</tr>
 									</thead>
 									<tbody>
@@ -82,21 +88,14 @@
 											<c:choose>
 												<c:when test="${!order.orderItems.contains(item)}">
 													<c:choose>
-														<c:when test="${item.catergory.equals(cat)}">
+														<c:when test="${item.category.equals(cat)}">
 															<tr>
 																<td>
-																	<img src= "${item.url}" class="img-thumbnail img"/>
+																	<img src= "${item.url}" class="img-thumbnail img"/> ${item.name}
 																</td>	
-																<td>${item.name}</td>
+																
 																<td>$${item.price}</td>
-																<c:choose>
-																	<c:when test="${order.orderItems.contains(item)}">
-																		<td><a class="btn btn-danger" role="button" href="/EasyOrder.com/newOrder/${order.id}/remove/${item.id}">Remove</a> ( ${item.quantities} ) <a class="btn btn-success" role="button" href="/EasyOrder.com/newOrder/${order.id}/${item.id}">Add</a></td>
-																	</c:when>
-																	<c:otherwise>
-																		<td><a class="btn btn-primary" role="button" href="/EasyOrder.com/newOrder/${order.id}/${item.id}">Add</a></td>
-																	</c:otherwise>
-																</c:choose>
+																<td><a class="btn btn-primary" role="button" href="/EasyOrder.com/newOrder/${order.id}/${item.id}">Add</a></td>
 															</tr>
 														</c:when>
 													</c:choose>

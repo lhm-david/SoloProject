@@ -16,7 +16,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
-import javax.validation.constraints.Future;
 import javax.validation.constraints.NotBlank;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -32,10 +31,15 @@ public class Order {
 	@NotBlank
 	private String deliveryOption;
 	@DateTimeFormat(pattern="yyyy-MM-dd")
-	@Future
 	private Date scheduleDate;
 	private Boolean paid = false;
+	private Boolean hasSpecial = false;
 	private Double total = 0.00;
+	
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="payment_id")
+	private Payment orderPayment;
+	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="user_id")
 	private User orderByUser;
@@ -123,4 +127,17 @@ public class Order {
 	public String getDeliveryOption() {
 		return deliveryOption;
 	}
+	public Boolean getHasSpecial() {
+		return hasSpecial;
+	}
+	public void setHasSpecial(Boolean hasSpecial) {
+		this.hasSpecial = hasSpecial;
+	}
+	public Payment getOrderPayment() {
+		return orderPayment;
+	}
+	public void setOrderPayment(Payment orderPayment) {
+		this.orderPayment = orderPayment;
+	}
+	
 }

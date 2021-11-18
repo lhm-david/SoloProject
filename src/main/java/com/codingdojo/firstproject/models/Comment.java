@@ -13,6 +13,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 
@@ -22,14 +24,26 @@ public class Comment {
 	@Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
+	
 	@NotBlank
 	private String content;
+	
 	@Column(updatable=false)
     private Date createdAt;
     private Date updatedAt;
+    @PrePersist
+    protected void onCreate(){
+        this.createdAt = new Date();
+    }
+    @PreUpdate
+    protected void onUpdate(){
+        this.updatedAt = new Date();
+    }
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User commentByUser;
+    
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
 	        name = "user_comment", 
