@@ -8,6 +8,9 @@
 <head>
 <meta charset="ISO-8859-1">
 <title>CommentWall</title>
+
+	
+		    
 <link rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css" />
 <link rel="stylesheet" href="/css/style.css"/>
 </head>
@@ -23,6 +26,9 @@
 		</div>
 		<hr>
 		<h2>Comment Wall</h2>
+
+
+			<!-- Added Code by Anna -->
 		<div style="display:flex;">		
 	       <div style="flex-direct:row; margin-top:15px; margin-left: 40px">
 			   <form:form method="post" action="/EasyOrder.com/commentWall/user" modelAttribute="newComment">

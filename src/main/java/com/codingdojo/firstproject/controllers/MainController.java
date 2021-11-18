@@ -46,7 +46,7 @@ public class MainController {
 	private final PaymentService paymentService;
 	
 	Boolean flag = true;
-	
+
 	public MainController (UserService userService, UserValidator userValidator, OrderService orderService, CommentService commentService, ItemService itemService, PaymentService paymentService) {
 		this.userService=userService;
 		this.userValidator=userValidator;
@@ -205,7 +205,7 @@ public class MainController {
 		currentOrder.setHasSpecial(false);
 		return "redirect:/EasyOrder.com/newOrder/"+orderId;
 	}
-	
+
 	@GetMapping("/EasyOrder.com/newOrder/{orderId}/{id}")
 	public String addToCart(HttpSession session, @PathVariable("orderId")Long orderId, @PathVariable("id")Long itemId, Model viewModel, @ModelAttribute("item")Item item) {
 		Item newItem = this.itemService.getOne(itemId);
@@ -274,6 +274,7 @@ public class MainController {
 			Double total = Math.round((discountToApply*0.9)*100.0)/100.00;
 			orderService.disCountApply(order, total);
 		}
+    
 		//Updated code by Archana
 		return "redirect:/EasyOrder.com/"+orderId+"/checkout/payment";
 	}
@@ -296,6 +297,52 @@ public class MainController {
 		viewModel.addAttribute("user", loginUser);
 		return "orderDetail.jsp";
 	}
+	
+	// Added the payment get
+	//"/EasyOrder.com/{id}/CheckOut"
+	 
+	@GetMapping("/EasyOrder.com/{id}/checkout/payment")
+	public String paymentOrder(@ModelAttribute("payment") Payment payment,@PathVariable("id") Long orderId,BindingResult result,Model model,HttpSession session) {
+		User user= this.userService.getOneUser((Long)session.getAttribute("user_Id"));
+		model.addAttribute("user", user);
+		List<Payment> userPayments=user.getPaymentByUser();
+		
+		//model.addAttribute("pizza", this.pService.getOnePizza(id));
+		model.addAttribute("order", this.orderService.getOne(orderId));
+		model.addAttribute("payments",userPayments);
+		return "payment.jsp";
+	}
+	
+	@PostMapping("/EasyOrder.com/{id}/checkout/payment")
+	public String paymentOrderPost(@Valid@ModelAttribute("payment") Payment payment,@PathVariable("id") Long orderId,BindingResult result,Model model,HttpSession session){
+		
+		if(result.hasErrors()) {
+		User user= this.userService.getOneUser((Long)session.getAttribute("user_Id"));
+		//model.addAttribute("pizza", this.pService.getOnePizza(id));
+		model.addAttribute("order", this.orderService.getOne(orderId));
+
+		return "payment.jsp";
+		}
+		
+		// user who makePayment
+		User user= this.userService.getOneUser((Long)session.getAttribute("user_Id"));
+		// create a payment
+		
+		this.payService.createPayment(payment);
+		//return "redirect:/orders/continue";
+		return "redirect:/EasyOrder.com/"+orderId+"/success";
+
+	
+	}
+
+
+	@GetMapping("/continue")
+	public String countinueFoody() {
+		return "continue.jsp";
+	}
+
+	
+	
 	
 	@GetMapping("/EasyOrder.com/delete/{id}")
 	public String deleteOrder(@PathVariable("id")Long id) {
@@ -375,6 +422,7 @@ public class MainController {
 		return "success.jsp";
 	}
 	
+
 	//Updated code by Anna
 	@GetMapping("/EasyOrder.com/commentWall")
 	public String showComment(HttpSession session, Model viewModel, @ModelAttribute("newComment")Comment newComment) {
@@ -390,6 +438,19 @@ public class MainController {
 		}
 		return "comment.jsp";
 	}
+	//Added code by Anna
+	@PostMapping("/EasyOrder.com/commentWall/user")
+	public String postUserComment(@Valid @ModelAttribute("newComment")Comment newComment, BindingResult result, HttpSession session, Model viewModel) {
+		flag = false;
+		return "redirect:/EasyOrder.com/commentWall";
+	}
+	//Added code by Anna
+	@PostMapping("/EasyOrder.com/commentWall/reset")
+	public String postResetComment(@Valid @ModelAttribute("newComment")Comment newComment, BindingResult result, HttpSession session, Model viewModel) {
+		flag = true;
+		return "redirect:/EasyOrder.com/commentWall";
+	}
+
 	
 	//Added code by Anna
 	@PostMapping("/EasyOrder.com/commentWall/user")

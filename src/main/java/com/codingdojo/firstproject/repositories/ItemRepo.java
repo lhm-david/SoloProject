@@ -11,7 +11,6 @@ import com.codingdojo.firstproject.models.Item;
 @Repository
 public interface ItemRepo extends CrudRepository<Item, Long> {
 	List<Item> findAll();
-	
 	//Add by Anna
 	@Query(value = "select * from items Order by price asc", nativeQuery = true)
 	List<Item> findByPriceOrderAscended();

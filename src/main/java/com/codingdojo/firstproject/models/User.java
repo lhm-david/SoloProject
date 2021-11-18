@@ -3,6 +3,7 @@ package com.codingdojo.firstproject.models;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -54,6 +55,7 @@ public class User {
     @OneToMany(mappedBy="commentByUser", fetch = FetchType.LAZY)
     private List<Comment> comments;
     
+
     @OneToMany(mappedBy="paymentForUser", fetch = FetchType.LAZY)
     private List<Payment> userPayments;
     
